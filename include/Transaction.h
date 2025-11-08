@@ -53,6 +53,10 @@ class Transaction
     {
         return category;
     }
+    std::string getNotes() const
+    {
+        return notes;
+    }
 
     std::string getAmountColor() const;
     void displayInfo() const;

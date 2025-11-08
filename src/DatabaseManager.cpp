@@ -22,7 +22,7 @@ bool DatabaseManager::saveTransactions(const std::vector<Transaction> &ts) const
         ofs << t.getId() << "," << t.getAmount() << "," << dt.year << "," << dt.month << "," << dt.day << "," << dt.hour
             << "," << dt.minute << "," << t.getCounterpart() << "," << (t.getIsIncome() ? 1 : 0) << ","
             << static_cast<int>(t.getPaymentMethod()) << "," << t.getCategory() << ","
-            << t.getCounterpart() // notes, optional, can be empty
+            << t.getNotes() // notes, optional, can be empty
             << "\n";
     }
 

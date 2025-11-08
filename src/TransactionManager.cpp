@@ -85,7 +85,7 @@ std::vector<Transaction> TransactionManager::searchByCounterpart(const std::stri
     return result;
 }
 
-MonthlySummary TransactionManager::getMonthlySummary(int year, int month) const
+Summary TransactionManager::getMonthlySummary(int year, int month) const
 {
     double income = 0, expense = 0;
     for (const auto &t : transactions)
@@ -99,7 +99,24 @@ MonthlySummary TransactionManager::getMonthlySummary(int year, int month) const
                 expense += t.getAmount();
         }
     }
-    return MonthlySummary(year, month, income, expense);
+    return Summary(year, month, income, expense);
+}
+
+Summary TransactionManager::getAnnualSummary(int year) const
+{
+    double income = 0, expense = 0;
+    for (const auto &t : transactions)
+    {
+        DateTime dt = t.getDateTime();
+        if (dt.year == year)
+        {
+            if (t.getIsIncome())
+                income += t.getAmount();
+            else
+                expense += t.getAmount();
+        }
+    }
+    return Summary(year, 0, income, expense);
 }
 
 bool TransactionManager::save()

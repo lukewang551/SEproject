@@ -12,6 +12,7 @@ int main()
     std::cout << "4. Filter by Amount Range\n";
     std::cout << "5. Search by Counterpart\n";
     std::cout << "6. View Monthly Summary\n";
+    std::cout << "7. View Annual Summary\n";
     std::cout << "0. Exit\n";
 
     int choice;
@@ -90,6 +91,13 @@ int main()
             std::cout << "Enter year and month: ";
             std::cin >> y >> m;
             manager.getMonthlySummary(y, m).displaySummary();
+        }
+        else if (choice == 7)
+        {
+            int y;
+            std::cout << "Enter year: ";
+            std::cin >> y;
+            manager.getAnnualSummary(y).displaySummary();
         }
     }
 

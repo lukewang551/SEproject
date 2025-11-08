@@ -1,6 +1,6 @@
 #pragma once
 #include "DatabaseManager.h"
-#include "MonthlySummary.h"
+#include "Summary.h"
 #include "Transaction.h"
 #include <string>
 #include <vector>
@@ -23,7 +23,9 @@ class TransactionManager
     std::vector<Transaction> filterByAmountRange(double min, double max) const;
     std::vector<Transaction> searchByCounterpart(const std::string &keyword) const;
 
-    MonthlySummary getMonthlySummary(int year, int month) const;
+    Summary getMonthlySummary(int year, int month) const;
+    Summary getAnnualSummary(int year) const;
+    
     bool save();
     bool load();
 };
