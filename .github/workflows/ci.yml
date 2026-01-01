@@ -1,0 +1,89 @@
+name: C++ Unit Tests CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. 检出代码
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    # 2. 安装依赖
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          libgtest-dev \
+          gcovr
+    
+    # 3. 编译Google Test
+    - name: Build Google Test
+      run: |
+        cd /usr/src/gtest
+        sudo cmake CMakeLists.txt
+        sudo make
+        sudo cp lib/*.a /usr/lib
+    
+    # 4. 编译单元测试
+    - name: Build unit tests
+      run: |
+        echo "Building unit tests..."
+        mkdir -p build
+        cd build
+        g++ -std=c++17 -I../src -I/usr/include/gtest \
+            ../tests/unit_tests.cpp ../src/*.cpp \
+            -lgtest -lgtest_main -pthread \
+            -o unit_tests
+        echo "Unit tests built successfully"
+    
+    # 5. 运行单元测试
+    - name: Run unit tests
+      run: |
+        cd build
+        echo "Running unit tests..."
+        ./unit_tests --gtest_output=xml:unit_test_results.xml
+        echo "All unit tests passed"
+    
+    # 6. 生成覆盖率报告
+    - name: Generate coverage report
+      run: |
+        cd build
+        echo "Generating coverage report..."
+        
+        # 带覆盖率编译
+        g++ -std=c++17 --coverage -fprofile-arcs -ftest-coverage \
+            -I../src -I/usr/include/gtest \
+            ../tests/unit_tests.cpp ../src/*.cpp \
+            -lgtest -lgtest_main -pthread \
+            -o unit_tests_coverage
+        
+        # 运行测试生成数据
+        ./unit_tests_coverage
+        
+        # 生成覆盖率报告
+        echo "Coverage summary:"
+        gcovr --exclude tests/ --print-summary .
+        
+        # 生成HTML报告
+        gcovr --exclude tests/ \
+              --html-details coverage.html \
+              --html-title "Unit Test Coverage Report"
+    
+    # 7. 上传测试结果
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: unit-test-results
+        path: |
+          build/unit_test_results.xml
+          build/coverage.html
+        retention-days: 7
