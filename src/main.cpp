@@ -15,6 +15,11 @@ int main()
     std::cout << "7. View Annual Summary\n";
     std::cout << "0. Exit\n";
 
+    /*flaw test
+    int *p = nullptr;
+    int a = *p;
+    flaw test*/
+
     int choice;
     while (true)
     {

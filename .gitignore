@@ -100,3 +100,11 @@ _CPack_Packages/
 *.dmg
 
 report/
+report5/
+
+# 测试框架 - 在CI中自动安装，不需要上传
+googletest/
+googletest-*.zip
+googletest-*.tar.gz
+.vscode/
+CMakeSettings.json

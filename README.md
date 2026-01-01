@@ -7,3 +7,5 @@
 5. Search by Counterpart
 6. View Monthly Summary
 7. View Annual Summary
+
+The data is saved at `build\data.txt`.
