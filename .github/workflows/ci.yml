@@ -33,25 +33,43 @@ jobs:
         sudo make
         sudo cp lib/*.a /usr/lib
     
-    # 4. 编译单元测试
+    # 4. 编译单元测试（排除main.cpp）
     - name: Build unit tests
       run: |
         echo "Building unit tests..."
         mkdir -p build
         cd build
+        
+        # 列出除了main.cpp之外的所有cpp文件
+        SRC_FILES=$(find ../src -name "*.cpp" ! -name "main.cpp")
+        
+        echo "Source files to compile:"
+        echo "$SRC_FILES"
+        
+        # 编译单元测试
         g++ -std=c++17 -I../src -I/usr/include/gtest \
-            ../tests/unit_tests.cpp ../src/*.cpp \
+            ../tests/unit_tests.cpp $SRC_FILES \
             -lgtest -lgtest_main -pthread \
             -o unit_tests
-        echo "Unit tests built successfully"
+        
+        if [ -f "unit_tests" ]; then
+          echo "✅ Unit tests built successfully"
+        else
+          echo "❌ Unit tests build failed"
+          exit 1
+        fi
     
     # 5. 运行单元测试
     - name: Run unit tests
       run: |
         cd build
         echo "Running unit tests..."
-        ./unit_tests --gtest_output=xml:unit_test_results.xml
-        echo "All unit tests passed"
+        if ./unit_tests --gtest_output=xml:unit_test_results.xml; then
+          echo "✅ All unit tests passed"
+        else
+          echo "❌ Unit tests failed"
+          exit 1
+        fi
     
     # 6. 生成覆盖率报告
     - name: Generate coverage report
@@ -59,24 +77,28 @@ jobs:
         cd build
         echo "Generating coverage report..."
         
-        # 带覆盖率编译
+        # 列出除了main.cpp之外的所有cpp文件
+        SRC_FILES=$(find ../src -name "*.cpp" ! -name "main.cpp")
+        
+        # 带覆盖率编译（排除main.cpp）
         g++ -std=c++17 --coverage -fprofile-arcs -ftest-coverage \
             -I../src -I/usr/include/gtest \
-            ../tests/unit_tests.cpp ../src/*.cpp \
+            ../tests/unit_tests.cpp $SRC_FILES \
             -lgtest -lgtest_main -pthread \
             -o unit_tests_coverage
         
         # 运行测试生成数据
-        ./unit_tests_coverage
+        ./unit_tests_coverage > /dev/null 2>&1
         
         # 生成覆盖率报告
         echo "Coverage summary:"
-        gcovr --exclude tests/ --print-summary .
+        gcovr --exclude tests/ --exclude ".*main.cpp" --print-summary .
         
         # 生成HTML报告
-        gcovr --exclude tests/ \
+        gcovr --exclude tests/ --exclude ".*main.cpp" \
               --html-details coverage.html \
               --html-title "Unit Test Coverage Report"
+        echo "✅ Coverage report generated"
     
     # 7. 上传测试结果
     - name: Upload test artifacts
@@ -87,3 +109,17 @@ jobs:
           build/unit_test_results.xml
           build/coverage.html
         retention-days: 7
+    
+    # 8. 单独编译主程序（验证能独立运行）
+    - name: Build main program
+      run: |
+        echo "Building main program separately..."
+        mkdir -p build/main
+        cd build/main
+        g++ -std=c++17 -I../../src ../../src/*.cpp -o FinanceSystem
+        if [ -f "FinanceSystem" ]; then
+          echo "✅ Main program built successfully"
+        else
+          echo "❌ Main program build failed"
+          exit 1
+        fi
